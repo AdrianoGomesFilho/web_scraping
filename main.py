@@ -1,14 +1,12 @@
-import requests
 from bs4 import BeautifulSoup
 
-url = "https://dejt.jt.jus.br/dejt/f/n/diariocon"
+with open('home.html', 'r') as html_file: #open the file with "r" read mode, #with open and closes
+    content = html_file.read()
 
-response = requests.get(url)
-soup = BeautifulSoup(response.content, "html.parser")
+    soup = BeautifulSoup(content, 'lxml')
+    course_cards = soup.find_all('div', class_='card')
+    for course in course_cards:
+        course_name = course.h5.text
+        course_price = course.a.text.split()[-1] #split the words by blank space and return the last (-1)
 
-# Find relevant sections containing notifications
-notifications = soup.find_all("div", class_="notification-class")  # Adjust the class name as needed
-
-for notification in notifications:
-    if "Vitor Leandro de Oliveira" in notification.text:
-        print(notification.text)
+        print(f'{course_name} costs {course_price}')
