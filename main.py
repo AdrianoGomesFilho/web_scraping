@@ -1,22 +1,32 @@
-from bs4 import BeautifulSoup
-# first >  pip install requests
 import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
 
-print('Put some skill that you are not familiar with')
-unfamiliar_skill = input('>')
-print(f'Filtering out {unfamiliar_skill}')
+# Define the URL and query parameters
+url = "https://comunica.pje.jus.br/consulta"
+today_date = datetime.today().strftime('%Y-%m-%d')
+params = {
+    'dataDisponibilizacaoInicio': today_date,
+    'dataDisponibilizacaoFim': today_date,
+    'nomeAdvogado': 'vitor leandro de oliveira'
+}
 
-html_text = requests.get('https://www.timesjobs.com/candidate/job-search.html?searchType=Home_Search&from=submit&asKey=OFF&txtKeywords=&cboPresFuncArea=35').text
-soup = BeautifulSoup(html_text, 'lxml')
-jobs = soup.find_all('li', class_ = 'clearfix job-bx wht-shd-bx')
-for job in jobs:
-    published_date = job.find('span', class_='sim-posted').span.text
-    if '1 day' in published_date:
-        company_name = job.find('h3', class_='joblist-comp-name').text.replace(' ', '')
-        skills = job.find('span', class_='srp-skills').text.replace(' ', '')
-        more_info = job.header.h2.a['href']
-        if unfamiliar_skill not in skills:
-            print(f"Company name: {company_name.strip()}")
-            print(f"Skills required: {skills.strip()}")
-            print(f"More info: {more_info}")
-            print('')
+# Perform the GET request without headers
+response = requests.get(url, params=params)
+
+# Check if the request was successful
+if response.status_code == 200:
+    # Parse the response content
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    # Find the desired element
+    numero_unico = soup.find_all(class_='numero-unico-formatado')
+    
+    # Print the result
+    if numero_unico:
+        for numero in numero_unico:
+            print(numero.text)
+    else:
+        print("Element not found")
+else:
+    print(f"Request failed with status code {response.status_code}")
