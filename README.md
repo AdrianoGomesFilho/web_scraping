@@ -1,12 +1,12 @@
 # OBJETIVO DO PROJETO
-Buscar palavras em sites da Web e compilar, em especial, diários oficiais com intimações de processos.
+Web Scraper responsável por compilar as publições via DJEN no nome do advogado.
 
 # O QUE ELE FAZ?
 
-Acessa cada página do diário oficial, fazendo uma varredura pelas palavras chave e compilando para o usuário.
+Acessa as publicações via DJEN (oficialmente utilizado a partir de 01.08.2024), fazendo uma varredura das publicações no nome do advogado fornecido.
 
 # LINGUAGEM USADA
-A definir
+Python
 
 # COMO PODEREI USÁ-LO?
 A definir
