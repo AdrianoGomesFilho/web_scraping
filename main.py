@@ -6,21 +6,39 @@ def create_url(name):
     params = {
         'nomeAdvogado': name
     }
-    return f"{base_url}?{urlencode(params)}"
+    url = f"{base_url}?{urlencode(params)}"
+    return url.replace('+', '%20')  # Substitui + por %20
 
 def fetch_and_extract_content(url):
     session = HTMLSession()
     response = session.get(url)
     
-    # Executa o JavaScript na página
-    response.html.render()
+    if response.status_code != 200:
+        return f"Request failed with status code: {response.status_code}"
     
-    # Encontrar o conteúdo da classe "tab_panel2 ng-star-inserted"
-    tab_content = response.html.find('.tab_panel2.ng-star-inserted')
-    if tab_content:
-        return tab_content[0].text.strip()  # Retorna o texto do primeiro elemento encontrado
+    # Print the raw HTML content before rendering JavaScript
+    print("Raw HTML content before rendering JavaScript:")
+    print(response.html.html)
+    
+    # Executa o JavaScript na página com um tempo de espera maior
+    response.html.render(sleep=5)  # Aumente o tempo de espera se necessário
+    
+    # Print the HTML content after rendering JavaScript
+    print("HTML content after rendering JavaScript:")
+    print(response.html.html)
+    
+    # Encontrar todos os elementos com a classe "main-panel"
+    content_texts = response.html.find('.main-panel')
+
+    print("Elements found:", content_texts)
+    
+    # Coletar o texto de cada elemento encontrado
+    all_content = [content.text.strip() for content in content_texts]
+    
+    if all_content:
+        return "\n\n".join(all_content)  # Junta todo o texto em uma única string, separada por duas quebras de linha
     else:
-        return "Conteúdo da classe 'tab_panel2 ng-star-inserted' não encontrado"
+        return "Conteúdo da classe 'content-texto' não encontrado"
 
 def main():
     # Nome do advogado
@@ -29,9 +47,12 @@ def main():
     # Criar URL com o nome do advogado
     url = create_url(name)
     
+    # Depurar a URL gerada
+    print("URL Gerada:", url)
+    
     # Fazer a requisição e extrair o conteúdo
     content = fetch_and_extract_content(url)
-    print("Conteúdo da classe 'tab_panel2 ng-star-inserted':", content)
+    print("Conteúdo das classes 'content-texto':", content)
 
 if __name__ == "__main__":
     main()
