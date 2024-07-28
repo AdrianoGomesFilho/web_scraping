@@ -1,4 +1,5 @@
-from requests_html import HTMLSession
+import asyncio
+from pyppeteer import launch
 from urllib.parse import urlencode
 
 def create_url(name):
@@ -9,50 +10,51 @@ def create_url(name):
     url = f"{base_url}?{urlencode(params)}"
     return url.replace('+', '%20')  # Substitui + por %20
 
-def fetch_and_extract_content(url):
-    session = HTMLSession()
-    response = session.get(url)
+async def fetch_and_extract_content(url):
+    browser = await launch()
+    page = await browser.newPage()
+    await page.goto(url, {'waitUntil': 'networkidle2'})
     
-    if response.status_code != 200:
-        return f"Request failed with status code: {response.status_code}"
-    
-    # Print the raw HTML content before rendering JavaScript
-    print("Raw HTML content before rendering JavaScript:")
-    print(response.html.html)
-    
-    # Executa o JavaScript na página com um tempo de espera maior
-    response.html.render(sleep=5)  # Aumente o tempo de espera se necessário
-    
-    # Print the HTML content after rendering JavaScript
-    print("HTML content after rendering JavaScript:")
-    print(response.html.html)
-    
-    # Encontrar todos os elementos com a classe "main-panel"
-    content_texts = response.html.find('.main-panel')
+    # Aguarda a renderização completa
+    await page.waitForSelector('.main-panel')
 
-    print("Elements found:", content_texts)
+    # Coleta o conteúdo da aba inicial
+    initial_content_texts = await page.evaluate('''() => {
+        return Array.from(document.querySelectorAll('.main-panel')).map(element => element.innerText);
+    }''')
     
-    # Coletar o texto de cada elemento encontrado
-    all_content = [content.text.strip() for content in content_texts]
+    # Encontra todos os botões para as outras abas
+    tab_buttons = await page.querySelectorAll('.mat-tab-label-content')
+    
+    all_content = []
+
+    # Itera sobre cada botão de aba, simula um clique e coleta o conteúdo
+    for i, button in enumerate(tab_buttons):
+        await button.click()
+        await page.waitForSelector('.main-panel', {'visible': True})
+        
+        tab_content_texts = await page.evaluate('''() => {
+            return Array.from(document.querySelectorAll('.main-panel')).map(element => element.innerText);
+        }''')
+        
+        all_content.extend(tab_content_texts)
+    
+    await browser.close()
     
     if all_content:
-        return "\n\n".join(all_content)  # Junta todo o texto em uma única string, separada por duas quebras de linha
+        return "\n\n".join(all_content)
     else:
-        return "Conteúdo da classe 'content-texto' não encontrado"
+        return "Conteúdo da classe 'main-panel' não encontrado"
 
-def main():
+async def main():
     # Nome do advogado
     name = "vitor leandro de oliveira"
     
     # Criar URL com o nome do advogado
     url = create_url(name)
-    
-    # Depurar a URL gerada
     print("URL Gerada:", url)
-    
-    # Fazer a requisição e extrair o conteúdo
-    content = fetch_and_extract_content(url)
-    print("Conteúdo das classes 'content-texto':", content)
+    content = await fetch_and_extract_content(url)
+    print("Conteúdo das abas:", content)
 
-if __name__ == "__main__":
-    main()
+# Executar o main async
+asyncio.get_event_loop().run_until_complete(main())
