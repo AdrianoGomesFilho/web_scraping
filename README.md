@@ -12,7 +12,11 @@ Python
 A definir
 
 # IMPLEMENTOS
-Veremos!
+-Melhorar o UX
+-Descarte de intimações repetidas
+-Espécie de check list de conclusão
+-Inserir mais nomes de advogados para pesquisa
+
 
 # SOBRE O DEV
 Para cada problema tento achar uma solução. Procuro sempre aprender pela internet (YouTube, ChatGpt, sites). Codando e testando!
