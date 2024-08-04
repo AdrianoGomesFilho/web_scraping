@@ -35,3 +35,18 @@ async def abrir_pagina_e_coleta_conteudo(url):
         }''')
 
         all_content.extend(tab_content_texts)
+
+    await browser.close()
+
+    if all_content:
+        return "\n\n".join(all_content)
+    else:
+        return "Publicações não encontradas"
+    
+async def main():
+    url = create_url(nome_do_advogado)
+    print("URL gerada:", url)
+    content = await abrir_pagina_e_coleta_conteudo(url)
+    print("Conteúdo das abas:", content)
+
+asyncio.get_event_loop().run_until_complete(main())

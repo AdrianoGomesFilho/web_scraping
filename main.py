@@ -1,4 +1,4 @@
-import asyncio #bliblioteca que permite executar tarefas assincronas usando o async and await
+import asyncio #bliblioteca que permite executar tarefas assincronas usando o async and await. Isso permite rodar várias funções ao mesmo tempo. async no inicio, o await vem nas linhas dentro da função
 from pyppeteer import launch #biblioteca que permite executar um chromium headless, launch é para inicializar
 from urllib.parse import urlencode #importa alguns parametros capazes de formatar string e escapar caracteres especiais
 from nomes_dos_advogados import nome_do_advogado
@@ -43,17 +43,19 @@ async def abrir_página_e_coleta_conteudo(url):
     await browser.close()
     
     if all_content:
-        return "\n\n".join(all_content)
+        return "\n\n".join(all_content) #se for true, faz .join, colocando linhas duplas entre eles \n\n
     else:
         return "Conteúdo da classe 'main-panel' não encontrado"
 
 async def main():
     
     # Criar URL com o nome do advogado (importado do arquivo externo)
+    #main é um coroutine, pois é executado, mas não finalizado, pois existem outras funções a serem executadas
     url = create_url(nome_do_advogado)
     print("URL Gerada:", url)
     content = await abrir_página_e_coleta_conteudo(url)
     print("Conteúdo das abas:", content)
 
-# Executar o main async
-asyncio.get_event_loop().run_until_complete(main())
+#1 Primeira função
+asyncio.get_event_loop().run_until_complete(main()) #.get_event_loop = reune as informacoes sobre as funções assíncronas (centro de controle). Se não tiver um loop, ele cria. É essential essa parte, para o asyncio funcionar
+
