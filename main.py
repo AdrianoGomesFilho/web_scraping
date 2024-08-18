@@ -18,12 +18,12 @@ async def abrir_página_e_coleta_conteudo(url):
     await page.goto(url, {'waitUntil': 'networkidle2'}) #vai para o url criado, esperando até a internet diminuir velocidade (garante que a página deu load completo)
     
     # Aguarda a renderização completa
-    await page.waitForSelector('.main-panel')
+    await page.waitForSelector('.numero-unico-formatado')
 
     # Coleta o conteúdo da aba inicial. Será repetido em outras abas
     # O page.evaluate passa um código em JS, que aparenta ser uma string completa. Os ''' em python permite fazer string multi linhas
     initial_content_texts = await page.evaluate('''() => { 
-        return Array.from(document.querySelectorAll('.main-panel')).map(element => element.innerText);
+        return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText);
     }''')
     
     # Encontra todos os botões para as outras abas
@@ -34,11 +34,11 @@ async def abrir_página_e_coleta_conteudo(url):
     # Itera sobre cada botão de aba, simula um clique e coleta o conteúdo
     for i, button in enumerate(tab_buttons): #o enumerate evita ter que declarar index o e depois somar +1, deixando mais conciso. Ele vai iterar sobre os items o mesmo jeito
         await button.click()
-        await page.waitForSelector('.main-panel', {'visible': True})
+        await page.waitForSelector('.numero-unico-formatado', {'visible': True})
         
         tab_content_texts = await page.evaluate('''() => {
-            return Array.from(document.querySelectorAll('.main-panel')).map(element => element.innerText); 
-        }''') #roda uma função arrow anônima na página, sabemos pelo (), sem parâmetros, que retorna um array com todos os elementos com a classe .main-panel. O .map itera o array, aplicando uma função de arrow que extrai o innerText
+            return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText); 
+        }''') #roda uma função arrow anônima na página, sabemos pelo (), sem parâmetros, que retorna um array com todos os elementos com a classe .numero-unico-formatado. O .map itera o array, aplicando uma função de arrow que extrai o innerText
         
         all_content.extend(tab_content_texts) #o extend adiciona ao all_content (já declarado antes) que continha os dados iniciais
     
@@ -47,7 +47,7 @@ async def abrir_página_e_coleta_conteudo(url):
     if all_content:
         return "\n\n".join(all_content) #se for true, faz .join, colocando linhas duplas entre eles \n\n
     else:
-        return "Conteúdo da classe 'main-panel' não encontrado"
+        return "Conteúdo da classe 'numero-unico-formatado' não encontrado"
 
 async def main():
     
