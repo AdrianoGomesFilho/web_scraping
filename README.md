@@ -9,7 +9,12 @@ Acessa as publicações via DJEN (oficialmente utilizado a partir de 01.08.2024)
 Python
 
 # COMO PODEREI USÁ-LO?
-A definir
+sudo apt install python3
+sudo apt install python3-pip
+sudo apt install python3-venv
+python3 -m venv ambiente_isolado
+source ambiente_isolado/bin/activate
+pip install pyppeteer
 
 # IMPLEMENTOS
 -Melhorar o UX
