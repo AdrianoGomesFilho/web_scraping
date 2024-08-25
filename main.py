@@ -29,7 +29,7 @@ async def abrir_página_e_coleta_conteudo(url):
     # Encontra todos os botões para as outras abas
     tab_buttons = await page.querySelectorAll('.mat-tab-label-content')
     
-    all_content = []
+    all_content = set() #garante que não haja duplicatas
 
     # Itera sobre cada botão de aba, simula um clique e coleta o conteúdo
     for i, button in enumerate(tab_buttons): #o enumerate evita ter que declarar index o e depois somar +1, deixando mais conciso. Ele vai iterar sobre os items o mesmo jeito
@@ -40,7 +40,7 @@ async def abrir_página_e_coleta_conteudo(url):
             return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText); 
         }''') #roda uma função arrow anônima na página, sabemos pelo (), sem parâmetros, que retorna um array com todos os elementos com a classe .numero-unico-formatado. O .map itera o array, aplicando uma função de arrow que extrai o innerText
         
-        all_content.extend(tab_content_texts) #o extend adiciona ao all_content (já declarado antes) que continha os dados iniciais
+        all_content.update(tab_content_texts) #o extend adiciona ao all_content (já declarado antes) que continha os dados iniciais
     
     await browser.close()
     
@@ -59,5 +59,5 @@ async def main():
     print("Conteúdo das abas:", content)
 
 #1 Primeira função
-asyncio.get_event_loop().run_until_complete(main()) #.get_event_loop = reune as informacoes sobre as funções assíncronas (centro de controle). Se não tiver um loop, ele cria. É essential essa parte, para o asyncio funcionar
-
+#get_event_loop = reune as informacoes sobre as funções assíncronas (centro de controle). Se não tiver um loop, ele cria. É essential essa parte, para o asyncio funcionar
+asyncio.get_event_loop().run_until_complete(main()) 

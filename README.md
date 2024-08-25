@@ -17,8 +17,7 @@ source ambiente_isolado/bin/activate
 pip install pyppeteer
 
 # IMPLEMENTOS
--Melhorar o UX
--Descarte de intimações repetidas
+-Melhorar o UX 
 -Espécie de check list de conclusão
 -Inserir mais nomes de advogados para pesquisa
 
