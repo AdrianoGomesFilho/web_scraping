@@ -12,7 +12,7 @@ def create_url(name, start_date, end_date):
     }
     return f"{base_url}?{urlencode(params)}"
 
-async def abrir_página_e_coleta_conteúdo(url):
+async def abre_pagina_e_coleta_conteúdo(url):
     browser = await launch()
     page = await browser.newPage()
     all_content = set()
@@ -73,7 +73,7 @@ async def abrir_página_e_coleta_conteúdo(url):
 async def main():
     url = create_url(name, start_date, end_date)
     print("URL Gerada:", url)
-    content = await abrir_página_e_coleta_conteúdo(url)
+    content = await abre_pagina_e_coleta_conteúdo(url)
     print("Conteúdo das abas:", content)
 
 asyncio.get_event_loop().run_until_complete(main())
