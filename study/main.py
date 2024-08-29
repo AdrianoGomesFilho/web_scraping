@@ -1,14 +1,14 @@
 import asyncio
 from pyppeteer import launch
 from urllib.parse import urlencode
-from parametros import name, start_date, end_date
+from parametros import nome_advogado, data_inicial, data_final
 
-def create_url(name, start_date, end_date):
+def create_url(nome_advogado, data_inicial, data_final):
     base_url = "https://comunica.pje.jus.br/consulta"
     params = {
-        'dataDisponibilizacaoInicio': start_date,
-        'dataDisponibilizacaoFim': end_date,
-        'nomeAdvogado': name
+        'dataDisponibilizacaoInicio': data_inicial,
+        'dataDisponibilizacaoFim': data_final,
+        'nomeAdvogado': nome_advogado
     }
     return f"{base_url}?{urlencode(params)}"
 
@@ -71,7 +71,7 @@ async def abre_pagina_e_coleta_conteúdo(url):
         return "Conteúdo da classe 'numero-unico-formatado' não encontrado"
 
 async def main():
-    url = create_url(name, start_date, end_date)
+    url = create_url(nome_advogado, data_inicial, data_final)
     print("URL Gerada:", url)
     content = await abre_pagina_e_coleta_conteúdo(url)
     print("Conteúdo das abas:", content)

@@ -1,3 +1,3 @@
-name = "vitor leandro de oliveira"
-start_date = "2024-08-20"
-end_date = "2024-08-20"
+nome_advogado = "vitor leandro de oliveira"
+data_inicial = "2024-08-20"
+data_final = "2024-08-20"
