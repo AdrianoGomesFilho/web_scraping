@@ -23,10 +23,22 @@ async def abre_pagina_e_coleta_conteudo(url):
         while True:
             try:
                 await pagina.waitForSelector('.numero-unico-formatado', {'timeout':30000})
-                initial_content_texts = await pagina.evaluate('''() => {
+                numero_processo = await pagina.evaluate('''() => {
                     return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText);
                     }''') #evaluate é do pyppeteer, permite executar JS na página, aqui vai retornar um array
-                conteudo_total.update(initial_content_texts)
+                
+                orgao = await pagina.evaluate('''() => { 
+                    return Array.from(document.querySelectorAll('.info-summary')).map(element => element.innerText);
+                }''')
+                
+                conteudo_intimacao = await pagina.evaluate('''() => { 
+                    return Array.from(document.querySelectorAll('.tab_panel2')).map(element => element.innerText);
+                }''')
+                conteudo_total.update({
+                    'numero_processo': numero_processo,
+                    'orgao': orgao,
+                    'conteudo_intimacao': conteudo_intimacao
+                })
             except Exception as erro_detalhe:
                 print(f"Erro de coleta: {erro_detalhe}")
             
@@ -48,7 +60,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                     await  botao_proxima_pagina.click()
                     await pagina.waitFor(2000) #aguarda um pouco para carregar
                     await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout':30000})
-                    print("Navegando para a próxima página...")
+
                 else:
                     break #quando esgotarem as paginas, finaliza e o while coleta o conteudo final
             except Exception as erro:
@@ -67,9 +79,12 @@ async def abre_pagina_e_coleta_conteudo(url):
     
 async def funcao_principal():
     url_final = criar_url(nome_advogado, data_inicial, data_final)
-    print("URL gerada:", url_final)
+    # print("URL gerada:", url_final)
     conteudo = await abre_pagina_e_coleta_conteudo(url_final)
+    print("Nome do advogado buscado:", nome_advogado)
+    print("Datas buscadas:", data_inicial, data_final)
     print("Conteúdo:", conteudo)
 
-asyncio.get_event_loop().run_until_complete(funcao_principal()) #trigger do código
+#trigger do código
+asyncio.get_event_loop().run_until_complete(funcao_principal()) 
                 
