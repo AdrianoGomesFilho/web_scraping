@@ -1,9 +1,10 @@
-import asyncio #permite executar tarefas assíncronas
-from pyppeteer import launch #permite executar o chromium headless
-from urllib.parse import urlencode #permite escapar caracteres especiais
+import asyncio  # Permite executar tarefas assíncronas
+from pyppeteer import launch  # Permite executar o Chromium headless
+from urllib.parse import urlencode  # Permite escapar caracteres especiais
 from parametros import nome_advogado, data_inicial, data_final
+import json  # Importa JSON para converter dicionários em strings formatadas
 
-#funcao criadora do URL
+# Função criadora do URL
 def criar_url(nome_advogado, data_inicial, data_final):
     url_base = "https://comunica.pje.jus.br/consulta"
     parametros = {
@@ -11,58 +12,79 @@ def criar_url(nome_advogado, data_inicial, data_final):
         'dataDisponibilizacaoFim': data_final,
         'nomeAdvogado': nome_advogado
     }
-    return f"{url_base}?{urlencode(parametros)}" #fusao dos parametros, adaptado para uma url
+    return f"{url_base}?{urlencode(parametros)}"  # Fusão dos parâmetros, adaptado para uma URL
 
 async def abre_pagina_e_coleta_conteudo(url):
-    navegador = await launch() #inicia o navegador headless
-    pagina = await navegador.newPage() #abre uma aba
-    conteudo_total = set() #set = conjunto de dados não repetidos
+    navegador = await launch()  # Inicia o navegador headless
+    pagina = await navegador.newPage()  # Abre uma aba
+    conteudo_total = []  # Lista para armazenar conteúdo coletado
 
     try:
-        await pagina.goto(url, {'waitUntil': 'networkidle2'})#vai para a URL e garante que esteja carregada a página 
+        await pagina.goto(url, {'waitUntil': 'networkidle2'})  # Vai para a URL e garante que a página esteja carregada
+        
         while True:
             try:
-                await pagina.waitForSelector('.numero-unico-formatado', {'timeout':30000})
-                numero_processo = await pagina.evaluate('''() => {
-                    return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText);
-                    }''') #evaluate é do pyppeteer, permite executar JS na página, aqui vai retornar um array
-                
-                orgao = await pagina.evaluate('''() => { 
-                    return Array.from(document.querySelectorAll('.info-summary')).map(element => element.innerText);
+                await pagina.waitForSelector('.numero-unico-formatado', {'timeout': 30000})
+
+                # Avalia o conteúdo dos processos
+                processos = await pagina.evaluate('''() => {
+                    const processos = [];
+                    const numeros = Array.from(document.querySelectorAll('.numero-unico-formatado'));
+                    const orgaos = Array.from(document.querySelectorAll('.info-summary'));
+                    const intimacoes = Array.from(document.querySelectorAll('.tab_panel2'));
+                    
+                    for (let i = 0; i < numeros.length; i++) {
+                        processos.push({
+                            numero_processo: numeros[i]?.innerText,
+                            orgao: orgaos[i]?.innerText,
+                            conteudo_intimacao: intimacoes[i]?.innerText
+                        });
+                    }
+                    return processos;
                 }''')
-                
-                conteudo_intimacao = await pagina.evaluate('''() => { 
-                    return Array.from(document.querySelectorAll('.tab_panel2')).map(element => element.innerText);
-                }''')
-                conteudo_total.update({
-                    'numero_processo': numero_processo,
-                    'orgao': orgao,
-                    'conteudo_intimacao': conteudo_intimacao
-                })
+
+                conteudo_total.extend(processos)
+            
             except Exception as erro_detalhe:
                 print(f"Erro de coleta: {erro_detalhe}")
             
-            try: #busca os botoes dos tribunais e coleta conteudo
+            try:
+                # Busca os botões dos tribunais e coleta conteúdo
                 botoes_tribunais = await pagina.querySelectorAll('.mat-tab-label-content')
                 for botao in botoes_tribunais:
                     await botao.click()
-                    await pagina.waitForSelector('.numero-unico-formatado',{'visible': True})
+                    await pagina.waitForSelector('.numero-unico-formatado', {'visible': True})
 
-                    conteudo_tab_tribunais = await pagina.evaluate('''() => {return Array.from(document.querySelectorAll('.numero-unico-formatado')).map(element => element.innerText);}''')
+                    conteudo_tab_tribunais = await pagina.evaluate('''() => {
+                        const processos = [];
+                        const numeros = Array.from(document.querySelectorAll('.numero-unico-formatado'));
+                        const orgaos = Array.from(document.querySelectorAll('.info-summary'));
+                        const intimacoes = Array.from(document.querySelectorAll('.tab_panel2'));
+                        
+                        for (let i = 0; i < numeros.length; i++) {
+                            processos.push({
+                                numero_processo: numeros[i]?.innerText,
+                                orgao: orgaos[i]?.innerText,
+                                conteudo_intimacao: intimacoes[i]?.innerText
+                            });
+                        }
+                        return processos;
+                    }''')
 
-                    conteudo_total.update(conteudo_tab_tribunais)
+                    conteudo_total.extend(conteudo_tab_tribunais)
+
             except Exception as erro:
                 print(f"Erro em selecionar tribunais: {erro}")
             
-            try: #verifica se tem botao de prox pagina disponivel (seta) sem status "disable" = cinza, caso contrário, sai do loop
+            try:
+                # Verifica se há botão de próxima página disponível (seta) sem status "disable" (cinza), caso contrário, sai do loop
                 botao_proxima_pagina = await pagina.querySelector('.ui-paginator-next:not(.ui-state-disabled)')
                 if botao_proxima_pagina:
-                    await  botao_proxima_pagina.click()
-                    await pagina.waitFor(2000) #aguarda um pouco para carregar
-                    await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout':30000})
-
+                    await botao_proxima_pagina.click()
+                    await pagina.waitFor(2000)  # Aguarda um pouco para carregar
+                    await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout': 30000})
                 else:
-                    break #quando esgotarem as paginas, finaliza e o while coleta o conteudo final
+                    break  # Quando esgotarem as páginas, finaliza e o while coleta o conteúdo final
             except Exception as erro:
                 print(f"Erro ao passar de página: {erro}")
                 break
@@ -70,21 +92,21 @@ async def abre_pagina_e_coleta_conteudo(url):
     except Exception as erro:
         print(f"Erro geral: {erro}")
     finally:
-        await navegador.close() #fecha o navegador para poupar recursos
+        await navegador.close()  # Fecha o navegador para poupar recursos
 
     if conteudo_total:
-        return "\n\n".join(conteudo_total) #junta os elementos e adiciona uma linha em branco entre eles \n\n
+        # Converte cada dicionário em JSON formatado e une-os com duas novas linhas entre eles
+        return "\n\n".join(json.dumps(processo, ensure_ascii=False, indent=2) for processo in conteudo_total)
     else:
         return "Não há conteúdo encontrado"
-    
+
 async def funcao_principal():
     url_final = criar_url(nome_advogado, data_inicial, data_final)
-    # print("URL gerada:", url_final)
     conteudo = await abre_pagina_e_coleta_conteudo(url_final)
     print("Nome do advogado buscado:", nome_advogado)
     print("Datas buscadas:", data_inicial, data_final)
     print("Conteúdo:", conteudo)
 
-#trigger do código
-asyncio.get_event_loop().run_until_complete(funcao_principal()) 
-                
+# Verifica e cria um novo loop de eventos se não existir um
+if __name__ == "__main__":
+    asyncio.run(funcao_principal())
