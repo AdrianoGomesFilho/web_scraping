@@ -23,29 +23,11 @@ async def abre_pagina_e_coleta_conteudo(url):
         await pagina.goto(url, {'waitUntil': 'networkidle2'})  
         
         while True:
-            try:#conteudo inicial
-                await pagina.waitForSelector('.card.fadeIn', {'timeout': 30000})  
-
-                # Collect all text from the parent element '.card.fadeIn' including all nested elements
-                processos = await pagina.evaluate('''() => {
-                    const processos = [];
-                    const cards = document.querySelectorAll('.card.fadeIn');
-
-                    cards.forEach(card => {
-                        processos.push(card.innerText);  // Collects all inner text from the card, including nested elements
-                    });
-
-                    return processos;
-                }''')
-
-                conteudo_total.extend(processos)
             
-            except Exception as erro_detalhe:
-                print(f"Erro de coleta: {erro_detalhe}")
-            
-            try: #coleta o conteudo clicando nas abas, problema - clica na primeira aba que ja foi aberta
+            try:
+                await pagina.waitForSelector('.fadeIn', {'timeout': 30000}) 
                 botoes_tribunais = await pagina.querySelectorAll('.mat-tab-label-content')
-                for botao in botoes_tribunais:#problema com duplicacao,o conteudo inicial se confunde com o loop de coleta
+                for botao in botoes_tribunais:
                     await botao.click()
                     await pagina.waitForSelector('.numero-unico-formatado', {'visible': True})
 
@@ -70,7 +52,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                 if botao_proxima_pagina:
                     await botao_proxima_pagina.click()
                     await pagina.waitFor(2000)
-                    await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout': 30000})
+                    await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 30000})
                 else:
                     break
             except Exception as erro:
