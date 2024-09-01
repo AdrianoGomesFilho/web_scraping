@@ -15,17 +15,17 @@ def criar_url(nome_advogado, data_inicial, data_final):
 
 # Function to open the page and collect content
 async def abre_pagina_e_coleta_conteudo(url):
-    navegador = await launch()  
-    pagina = await navegador.newPage()  
-    conteudo_total = []  
+    navegador = await launch()
+    pagina = await navegador.newPage()
+    conteudo_total = set()  # Use a set to avoid duplicates
 
     try:
-        await pagina.goto(url, {'waitUntil': 'networkidle2'})  
-        
+        await pagina.goto(url, {'waitUntil': 'networkidle2'})
+
         while True:
-            
             try:
-                await pagina.waitForSelector('.fadeIn', {'timeout': 30000}) 
+                await pagina.waitForSelector('.fadeIn', {'timeout': 30000})
+
                 botoes_tribunais = await pagina.querySelectorAll('.mat-tab-label-content')
                 for botao in botoes_tribunais:
                     await botao.click()
@@ -42,11 +42,12 @@ async def abre_pagina_e_coleta_conteudo(url):
                         return processos;
                     }''')
 
-                    conteudo_total.extend(conteudo_tab_tribunais)
+                    # Add to the set to avoid duplicates
+                    conteudo_total.update(conteudo_tab_tribunais)
 
             except Exception as erro:
                 print(f"Erro em selecionar tribunais: {erro}")
-            
+
             try:
                 botao_proxima_pagina = await pagina.querySelector('.ui-paginator-next:not(.ui-state-disabled)')
                 if botao_proxima_pagina:
