@@ -1,7 +1,10 @@
 import asyncio
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from pyppeteer import launch
 from urllib.parse import urlencode
-from parametros import nome_advogado, data_inicial, data_final
+from parametros import nome_advogado, data_inicial, data_final, email_user, email_password, email_recipients
 
 # Function to create the URL
 def criar_url(nome_advogado, data_inicial, data_final):
@@ -24,7 +27,7 @@ async def abre_pagina_e_coleta_conteudo(url):
 
         while True:
             try:
-                await pagina.waitForSelector('.fadeIn', {'timeout': 5000})
+                await pagina.waitForSelector('.fadeIn', {'timeout': 30000})
 
                 botoes_tribunais = await pagina.querySelectorAll('.mat-tab-label-content')
                 for botao in botoes_tribunais:
@@ -70,12 +73,43 @@ async def abre_pagina_e_coleta_conteudo(url):
     else:
         return "Não há conteúdo encontrado"
 
+# Function to send email
+def enviar_email(conteudo):
+    remetente = email_user
+    senha = email_password
+    destinatarios = email_recipients  # This should be a list of email addresses
+
+    msg = MIMEMultipart()
+    msg['From'] = remetente
+    msg['To'] = ", ".join(destinatarios)
+    msg['Subject'] = 'Resultados da Consulta'
+
+    corpo_email = f"""
+    Nome do advogado buscado: {nome_advogado}
+    Data inicial e final de buscas: {data_inicial} até {data_final}
+    
+    Conteúdo:
+    {conteudo}
+    """
+    
+    msg.attach(MIMEText(corpo_email, 'plain'))
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as servidor:
+            servidor.starttls()
+            servidor.login(remetente, senha)
+            servidor.sendmail(remetente, destinatarios, msg.as_string())
+            print("E-mail enviado com sucesso!")
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+
 async def funcao_principal():
     url_final = criar_url(nome_advogado, data_inicial, data_final)
     conteudo = await abre_pagina_e_coleta_conteudo(url_final)
     print("Nome do advogado buscado:", nome_advogado)
     print("Data inicial e final de buscas:", data_inicial, data_final)
     print("Conteúdo:", conteudo)
+    enviar_email(conteudo)  # Send the collected content via email
 
 if __name__ == "__main__":
     asyncio.run(funcao_principal())
