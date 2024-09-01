@@ -5,7 +5,7 @@ from parametros import nome_advogado, data_inicial, data_final
 
 # Function to create the URL
 def criar_url(nome_advogado, data_inicial, data_final):
-    url_base = "https://comunica.pje.jus.br/consulta?siglaTribunal=TRT2"
+    url_base = "https://comunica.pje.jus.br/consulta"
     parametros = {
         'dataDisponibilizacaoInicio': data_inicial,
         'dataDisponibilizacaoFim': data_final,
@@ -24,24 +24,7 @@ async def abre_pagina_e_coleta_conteudo(url):
 
         while True:
             try:
-                await pagina.waitForSelector('.fadeIn', {'timeout': 3000})
-                processos = await pagina.evaluate('''() => {
-                    const processos = [];
-                        const cards = document.querySelectorAll('.fadeIn');
-
-                        cards.forEach(card => {
-                            processos.push(card.innerText.trim());  // Collects all inner text from the card, including nested elements
-                        });
-
-                    return processos;
-                }''')
-
-                conteudo_total.update(processos)
-            
-            except Exception as erro_detalhe:
-                print(f"Erro de coleta: {erro_detalhe}")
-            try:
-                await pagina.waitForSelector('.fadeIn', {'timeout': 3000})
+                await pagina.waitForSelector('.fadeIn', {'timeout': 5000})
 
                 botoes_tribunais = await pagina.querySelectorAll('.mat-tab-label-content')
                 for botao in botoes_tribunais:
