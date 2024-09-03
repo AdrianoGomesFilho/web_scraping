@@ -1,27 +1,31 @@
-# OBJETIVO DO PROJETO
-Web Scraper responsável por compilar as publições via DJEN no nome do advogado.
 
-# O QUE ELE FAZ?
+# Project Objective
+Develop a web scraper responsible for compiling publications via DJEN in the name of the lawyer.
 
-Acessa as publicações via DJEN (oficialmente utilizado a partir de 01.08.2024), fazendo uma varredura das publicações no nome do advogado fornecido.
+## Functionality
+- **Purpose**: The scraper accesses publications via DJEN (officially in use from 01.08.2024), scanning for publications in the name of the provided lawyer.
 
-# LINGUAGEM USADA
-Python
+## Technology Used
+- **Language**: Python
 
-# COMO PODEREI USÁ-LO?
-sudo apt install python3
-sudo apt install python3-pip
-sudo apt install python3-venv
-python3 -m venv ambiente_isolado
-source ambiente_isolado/bin/activate
-pip install pyppeteer
+## Usage Instructions
+1. Install Python and necessary packages:
+   ```bash
+   sudo apt install python3
+   sudo apt install python3-pip
+   sudo apt install python3-venv
+   python3 -m venv ambiente_isolado
+   source ambiente_isolado/bin/activate
+   pip install pyppeteer
+   ```
+   
+## Current Status
+### Issues to Address
+- Sending e-mails with the content
+- Improve user experience (UX).
+- Develop a checklist for task completion.
+- Add more lawyer names for searches.
 
-# IMPLEMENTOS
--Melhorar o UX 
--Espécie de check list de conclusão
--Inserir mais nomes de advogados para pesquisa
-
-
-# SOBRE O DEV
-Para cada problema tento achar uma solução. Procuro sempre aprender pela internet (YouTube, ChatGpt, sites). Codando e testando!
-Atualmente atuo como advogado na @sgaadv e implemento meus projetos lá
+# About the Developer
+- Problem-solving: I aim to find solutions for every problem, continually learning through online resources like YouTube, ChatGPT, and various websites. Coding and testing are my primary methods.
+- Current Role: I work as a lawyer at @sgaadv and implement my projects there.
