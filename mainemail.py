@@ -9,7 +9,7 @@ from destinatarios import recipient_list  # Import the list of recipient email a
 import os
 from dotenv import load_dotenv
 
-load_dotenv('credenciais.env')
+load_dotenv('credentials.env')
 print("Loaded .env file")
 # Function to create the URL
 def criar_url(sigla_tribunal, nome_advogado, data_inicial, data_final):
