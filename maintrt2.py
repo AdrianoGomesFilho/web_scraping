@@ -35,11 +35,11 @@ async def abre_pagina_e_coleta_conteudo(url):
                         await botao.click()
                         await asyncio.sleep(1)  # Wait briefly to ensure content loads
 
-                        await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout': 5000})
+                        await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 5000})
 
                         conteudo_tab_tribunais = await pagina.evaluate('''() => {
                             const processos = [];
-                            const cards = document.querySelectorAll('.numero-unico-formatado');
+                            const cards = document.querySelectorAll('.fadeIn');
 
                             cards.forEach(card => {
                                 processos.push(card.innerText.trim());
@@ -64,7 +64,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                 if botao_proxima_pagina:
                     await botao_proxima_pagina.click()
                     await asyncio.sleep(2)  # Wait briefly to ensure page navigation
-                    await pagina.waitForSelector('.numero-unico-formatado', {'visible': True, 'timeout': 10000})
+                    await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 10000})
                     print("Indo para a próxima página...")
                 else:
                     print("Não há mais páginas para navegar.")
