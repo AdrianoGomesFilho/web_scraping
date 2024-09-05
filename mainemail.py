@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('credentials.env')
 print("Loaded .env file")
+
 # Function to create the URL
 def criar_url(sigla_tribunal, nome_advogado, data_inicial, data_final):
     url_base = "https://comunica.pje.jus.br/consulta"
@@ -95,27 +96,33 @@ async def abre_pagina_e_coleta_conteudo(url):
 def enviar_email(conteudo, destinatarios):
     remetente = os.getenv("EMAIL_ADDRESS")  # Fetch the sender email address from environment variables
     senha = os.getenv("EMAIL_PASSWORD")     # Fetch the email password from environment variables
-    
+
     if not remetente or not senha:
         raise ValueError("Email credentials are not set in the environment variables.")
-    
-    # Set up the SMTP server
-    servidor = smtplib.SMTP('smtp.gmail.com', 587)
-    servidor.starttls()
-    servidor.login(remetente, senha)
-    
-    # Create the email
-    msg = MIMEMultipart()
-    msg['From'] = remetente
-    msg['To'] = ", ".join(destinatarios)
-    msg['Subject'] = f"Resultados da Consulta - {sigla_tribunal}"
 
-    # Attach the content
-    msg.attach(MIMEText(conteudo, 'plain'))
+    try:
+        # Set up the SMTP server (assuming OnMail uses SMTP)
+        servidor = smtplib.SMTP('smtp.onmail.com', 587)  # Update with correct OnMail SMTP server and port
+        servidor.starttls()  # Start TLS encryption
+        servidor.login(remetente, senha)  # Log in to the OnMail account
 
-    # Send the email
-    servidor.send_message(msg)
-    servidor.quit()
+        # Create the email
+        msg = MIMEMultipart()
+        msg['From'] = remetente
+        msg['To'] = ", ".join(destinatarios)
+        msg['Subject'] = "Resultados da Consulta"
+
+        # Attach the content
+        msg.attach(MIMEText(conteudo, 'plain'))
+
+        # Send the email
+        servidor.send_message(msg)
+        servidor.quit()
+
+        print("E-mail enviado com sucesso!")
+
+    except smtplib.SMTPException as e:
+        print(f"Erro ao enviar e-mail: {e}")
 
 # Main function
 async def funcao_principal():
