@@ -102,7 +102,7 @@ def enviar_email(conteudo, destinatarios):
 
     try:
         # Set up the SMTP server (assuming OnMail uses SMTP)
-        servidor = smtplib.SMTP('smtp.onmail.com', 587)  # Update with correct OnMail SMTP server and port
+        servidor = smtplib.SMTP('smtp.gmail.com', 587)  # Update with correct OnMail SMTP server and port
         servidor.starttls()  # Start TLS encryption
         servidor.login(remetente, senha)  # Log in to the OnMail account
 
@@ -126,6 +126,7 @@ def enviar_email(conteudo, destinatarios):
 
 # Main function
 async def funcao_principal():
+    
     url_final = criar_url(sigla_tribunal, nome_advogado, data_inicial, data_final)
     conteudo = await abre_pagina_e_coleta_conteudo(url_final)
     
