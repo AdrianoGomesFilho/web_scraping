@@ -27,7 +27,7 @@ def criar_url(sigla_tribunal, nome_advogado, data_inicial, data_final):
 async def abre_pagina_e_coleta_conteudo(url):
     navegador = await launch(headless=True)  # Run headless for efficiency
     pagina = await navegador.newPage()
-    conteudo_total = set()  # Use a set to avoid duplicates
+    conteudo_total = {}  # Use a dictionary to count occurrences of content
 
     try:
         await pagina.goto(url, {'waitUntil': 'networkidle2'})
@@ -57,8 +57,12 @@ async def abre_pagina_e_coleta_conteudo(url):
                             return processos;
                         }''')
 
-                        # Add to the set to avoid duplicates
-                        conteudo_total.update(conteudo_tab_tribunais)
+                        # Count occurrences of each content
+                        for item in conteudo_tab_tribunais:
+                            if item in conteudo_total:
+                                conteudo_total[item] += 1
+                            else:
+                                conteudo_total[item] = 1
 
                     except Exception as erro:
                         print(f"Erro ao clicar na aba: {erro}")
@@ -87,13 +91,16 @@ async def abre_pagina_e_coleta_conteudo(url):
     finally:
         await navegador.close()
 
+    # Sort the content by the text (alphabetically) and unify duplicates
     if conteudo_total:
-        return "\n\n".join(conteudo_total)  # Join all text content with double newline separator
+        conteudo_ordenado = sorted(conteudo_total.items(), key=lambda x: x[0])
+        resultado_final = "\n\n".join([f"{item} (repetido {count} vezes)" if count > 1 else item for item, count in conteudo_ordenado])
+        return resultado_final
     else:
         return "Não há conteúdo encontrado"
 
 # Function to send email
-def enviar_email(conteudo, destinatarios):
+def enviar_email(conteudo, destinatarios, sigla_tribunal, nome_advogado, data_inicial, data_final):
     remetente = os.getenv("EMAIL_ADDRESS")  # Fetch the sender email address from environment variables
     senha = os.getenv("EMAIL_PASSWORD")     # Fetch the email password from environment variables
 
@@ -103,6 +110,7 @@ def enviar_email(conteudo, destinatarios):
     try:
         # Set up the SMTP server (assuming OnMail uses SMTP)
         servidor = smtplib.SMTP('smtp.gmail.com', 587)  # Update with correct OnMail SMTP server and port
+
         servidor.starttls()  # Start TLS encryption
         servidor.login(remetente, senha)  # Log in to the OnMail account
 
@@ -112,8 +120,18 @@ def enviar_email(conteudo, destinatarios):
         msg['To'] = ", ".join(destinatarios)
         msg['Subject'] = "Resultados da Consulta"
 
+        # Add the parameters at the top of the email body
+        email_body = (
+            f"Tribunal: {sigla_tribunal}\n"
+            f"Advogado: {nome_advogado}\n"
+            f"Data Inicial: {data_inicial}\n"
+            f"Data Final: {data_final}\n\n"
+            "Conteúdo coletado:\n"
+            f"{conteudo}"
+        )
+
         # Attach the content
-        msg.attach(MIMEText(conteudo, 'plain'))
+        msg.attach(MIMEText(email_body, 'plain'))
 
         # Send the email
         servidor.send_message(msg)
@@ -137,7 +155,7 @@ async def funcao_principal():
     print("Conteúdo coletado:\n", conteudo)
     
     # Email the results
-    enviar_email(conteudo, recipient_list)
+    enviar_email(conteudo, recipient_list, sigla_tribunal, nome_advogado, data_inicial, data_final)
 
     print("E-mail enviado com sucesso!")
 
