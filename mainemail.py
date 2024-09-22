@@ -2,7 +2,6 @@ import asyncio
 from pyppeteer import launch
 from urllib.parse import urlencode
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import smtplib
 from parametros import sigla_tribunal, nome_advogado, data_inicial, data_final
 from destinatarios import recipient_list  # Import the list of recipient email addresses
@@ -76,7 +75,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                 
                 if botao_proxima_pagina:
                     await botao_proxima_pagina.click()
-                    await asyncio.sleep(2)  # Wait briefly to ensure page navigation
+                    await asyncio.sleep(4)  # Wait briefly to ensure page navigation
                     await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 10000})
                     print("Indo para a próxima página...")
                 else:
@@ -115,12 +114,6 @@ def enviar_email(conteudo, destinatarios, sigla_tribunal, nome_advogado, data_in
         servidor.login(remetente, senha)  # Log in to the OnMail account
 
         # Create the email
-        msg = MIMEMultipart()
-        msg['From'] = remetente
-        msg['To'] = ", ".join(destinatarios)
-        msg['Subject'] = "Resultados da Consulta"
-
-        # Add the parameters at the top of the email body
         email_body = (
             f"Tribunal: {sigla_tribunal}\n"
             f"Advogado: {nome_advogado}\n"
@@ -130,11 +123,14 @@ def enviar_email(conteudo, destinatarios, sigla_tribunal, nome_advogado, data_in
             f"{conteudo}"
         )
 
-        # Attach the content
-        msg.attach(MIMEText(email_body, 'plain'))
+        # Create a MIMEText object for plain text email
+        msg = MIMEText(email_body, 'plain')
+        msg['From'] = remetente
+        msg['To'] = ", ".join(destinatarios)
+        msg['Subject'] = "Resultados da Consulta"
 
         # Send the email
-        servidor.send_message(msg)
+        servidor.sendmail(remetente, destinatarios, msg.as_string())
         servidor.quit()
 
         print("E-mail enviado com sucesso!")
@@ -153,6 +149,7 @@ async def funcao_principal():
     print("Nome do advogado buscado:", nome_advogado)
     print("Data inicial e final de buscas:", data_inicial, data_final)
     print("Conteúdo coletado:\n", conteudo)
+    print(f"Tamanho do conteúdo coletado: {len(conteudo)} caracteres")
     
     # Email the results
     enviar_email(conteudo, recipient_list, sigla_tribunal, nome_advogado, data_inicial, data_final)
