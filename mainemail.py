@@ -41,7 +41,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                 for botao in botoes_tribunais:
                     try:
                         await botao.click()
-                        await asyncio.sleep(1)  # Wait briefly to ensure content loads
+                        await asyncio.sleep(5)  # Wait briefly to ensure content loads
 
                         await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 5000})
 
@@ -75,7 +75,7 @@ async def abre_pagina_e_coleta_conteudo(url):
                 
                 if botao_proxima_pagina:
                     await botao_proxima_pagina.click()
-                    await asyncio.sleep(4)  # Wait briefly to ensure page navigation
+                    await asyncio.sleep(5)  # Wait briefly to ensure page navigation
                     await pagina.waitForSelector('.fadeIn', {'visible': True, 'timeout': 10000})
                     print("Indo para a próxima página...")
                 else:
