@@ -99,11 +99,9 @@ def enviar_email(conteudo, destinatarios, sigla_tribunal, nome_advogado, data_in
         raise ValueError("Email credentials are not set in the environment variables.")
 
     try:
-        # Set up the SMTP server (assuming OnMail uses SMTP)
-        servidor = smtplib.SMTP('smtp.gmail.com', 587)  # Update with correct OnMail SMTP server and port
-
-        servidor.starttls()  # Start TLS encryption
-        servidor.login(remetente, senha)  # Log in to the OnMail account
+        servidor = smtplib.SMTP('smtp.gmail.com', 587)
+        servidor.starttls()
+        servidor.login(remetente, senha)
 
         # Create the email
         email_body = (
