@@ -26,7 +26,7 @@ def criar_url(sigla_tribunal, nome_advogado, data_inicial, data_final):
 async def abre_pagina_e_coleta_conteudo(url):
     navegador = await launch(headless=True)  # Run headless for efficiency
     pagina = await navegador.newPage()
-    conteudo_total = {}  # Use a dictionary to count occurrences of content
+    conteudo_total = []  # Use a list to accumulate content
 
     try:
         await pagina.goto(url, {'waitUntil': 'networkidle2'})
@@ -56,12 +56,9 @@ async def abre_pagina_e_coleta_conteudo(url):
                             return processos;
                         }''')
 
-                        # Count occurrences of each content
-                        for item in conteudo_tab_tribunais:
-                            if item in conteudo_total:
-                                conteudo_total[item] += 1
-                            else:
-                                conteudo_total[item] = 1
+                        # Add the collected content to the total list
+                        if conteudo_tab_tribunais:
+                            conteudo_total.extend(conteudo_tab_tribunais)
 
                     except Exception as erro:
                         print(f"Erro ao clicar na aba: {erro}")
@@ -90,13 +87,8 @@ async def abre_pagina_e_coleta_conteudo(url):
     finally:
         await navegador.close()
 
-    # Sort the content by the text (alphabetically) and unify duplicates
-    if conteudo_total:
-        conteudo_ordenado = sorted(conteudo_total.items(), key=lambda x: x[0])
-        resultado_final = "\n\n".join([f"{item} (repetido {count} vezes)" if count > 1 else item for item, count in conteudo_ordenado])
-        return resultado_final
-    else:
-        return "Não há conteúdo encontrado"
+    # Join all content into a single string for return
+    return "\n\n".join(conteudo_total)
 
 # Function to send email
 def enviar_email(conteudo, destinatarios, sigla_tribunal, nome_advogado, data_inicial, data_final):
