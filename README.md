@@ -2,8 +2,6 @@
 
 Este projeto é uma ferramenta baseada em Python para extrair informações de processos do Diário de Justiça Eletrônico Nacional (DJEN) e enviar os resultados por e-mail.
 
-Vídeo de apresentação do projeto no Instagram [@adrianogomes.adv](https://instagram.com/adrianogomes.adv).
-
 ## Recursos
 
 - Extrai informações de processos com base no tribunal, nome do advogado e intervalo de datas.
